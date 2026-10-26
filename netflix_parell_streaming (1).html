@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix - Parell Streaming</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        netflixRed: '#E50914',
+                        netflixDark: '#141414',
+                        netflixGray: '#181818',
+                        netflixCard: '#2F2F2F'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #141414;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #E50914;
+        }
+
+        /* Hide scrollbars for row sliders */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Hero Banner Animations & Styling */
+        .hero-slide {
+            transition: opacity 1s ease-in-out;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .hero-slide.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Touch & Drag Smoothness */
+        .row-container {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-netflixDark text-white font-sans antialiased selection:bg-netflixRed selection:text-white min-h-screen flex flex-col justify-between">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header id="main-header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-gradient-to-b from-black/80 via-black/40 to-transparent px-4 sm:px-8 lg:px-16 py-4 flex items-center justify-between">
+        <!-- Left Side: Logo & Navigation Links -->
+        <div class="flex items-center space-x-4 lg:space-x-10">
+            <!-- Netflix Logo -->
+            <a href="#" class="text-netflixRed text-2xl sm:text-3xl font-extrabold tracking-tighter uppercase focus:outline-none flex items-center space-x-1">
+                <span>NETFLIX</span>
+            </a>
+            
+            <!-- Desktop Nav Items -->
+            <nav class="hidden md:flex items-center space-x-6 text-sm text-gray-300">
+                <a href="#" class="text-white font-semibold hover:text-gray-300 transition">Home</a>
+                <a href="#" class="hover:text-gray-400 transition">TV Shows</a>
+                <a href="#" class="hover:text-gray-400 transition">Movies</a>
+                <a href="#" class="hover:text-gray-400 transition">New & Popular</a>
+                <a href="#" class="hover:text-gray-400 transition">My List</a>
+                <a href="#" class="hover:text-gray-400 transition">Browse by Languages</a>
+            </nav>
+        </div>
+
+        <!-- Right Side: Search, Notifications & Profile Dropdown -->
+        <div class="flex items-center space-x-4 sm:space-x-6">
+            <!-- Search Bar -->
+            <div class="relative flex items-center">
+                <button id="search-toggle-btn" class="text-gray-200 hover:text-white text-lg focus:outline-none p-1">
+                    <i class="fas fa-search"></i>
+                </button>
+                <input id="search-input" type="text" placeholder="Titles, people, genres" class="w-0 opacity-0 transition-all duration-300 bg-black/70 border border-gray-600 rounded text-sm px-3 py-1 focus:outline-none text-white focus:border-white">
+            </div>
+
+            <!-- Kids Section Link -->
+            <span class="hidden sm:inline-block text-sm text-gray-300 hover:text-white cursor-pointer transition">Kids</span>
+
+            <!-- Notifications Icon -->
+            <button class="text-gray-200 hover:text-white text-lg relative focus:outline-none">
+                <i class="fas fa-bell"></i>
+                <span class="absolute -top-1 -right-1 bg-netflixRed text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">3</span>
+            </button>
+
+            <!-- Profile Section Container (Fix applied: relative wrapper with click handling) -->
+            <div class="relative" id="profile-dropdown-container">
+                <button id="profile-menu-btn" aria-haspopup="true" aria-expanded="false" class="flex items-center space-x-2 focus:outline-none group cursor-pointer py-1">
+                    <!-- Avatar Showing Letter 'P' (No Photo as requested) -->
+                    <div class="w-8 h-8 rounded bg-gradient-to-tr from-red-700 to-red-500 text-white font-extrabold flex items-center justify-center text-base shadow-md group-hover:ring-2 group-hover:ring-white transition">
+                        P
+                    </div>
+                    <span class="hidden sm:inline-block text-sm text-gray-200 font-medium group-hover:text-white">Parell</span>
+                    <i id="profile-arrow" class="fas fa-caret-down text-xs text-gray-300 transition-transform duration-200"></i>
+                </button>
+
+                <!-- Profile Dropdown Menu -->
+                <div id="profile-dropdown-menu" class="hidden absolute right-0 mt-3 w-56 bg-netflixDark/95 border border-gray-700/80 rounded shadow-2xl py-2 z-50 backdrop-blur-md">
+                    <div class="px-4 py-2 border-b border-gray-800 flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded bg-gradient-to-tr from-red-700 to-red-500 text-white font-extrabold flex items-center justify-center text-sm">
+                            P
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-white">Parell</p>
+                            <p class="text-xs text-gray-400">Premium Ultra HD</p>
+                        </div>
+                    </div>
+                    
+                    <div class="py-1 border-b border-gray-800">
+                        <a href="#" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/80 hover:text-white transition">
+                            <i class="fas fa-pen text-xs w-4"></i>
+                            <span>Manage Profiles</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/80 hover:text-white transition">
+                            <i class="fas fa-user-circle text-xs w-4"></i>
+                            <span>Account</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800/80 hover:text-white transition">
+                            <i class="fas fa-question-circle text-xs w-4"></i>
+                            <span>Help Center</span>
+                        </a>
+                    </div>
+
+                    <div class="pt-1">
+                        <button onclick="alert('Signed out Parell')" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-800/80 transition font-medium">
+                            Sign out of Netflix
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <main class="flex-grow pb-16">
+        <!-- HERO BANNER CAROUSEL (AUTO-SLIDING 5s + INDICATORS + DRAG/SWIPE) -->
+        <section class="relative w-full h-[70vh] sm:h-[80vh] lg:h-[90vh] overflow-hidden bg-black" id="hero-banner-section">
+            
+            <!-- Hero Slide 1: Stranger Things -->
+            <div class="hero-slide active absolute inset-0 transition-opacity duration-1000 ease-in-out" data-index="0">
+                <img src="https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=1920&auto=format&fit=crop" class="w-full h-full object-cover object-center opacity-60" alt="Stranger Things Hero">
+                <div class="absolute inset-0 bg-gradient-to-r from-netflixDark via-netflixDark/60 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-netflixDark via-transparent to-transparent"></div>
+                <div class="absolute bottom-20 left-4 sm:left-8 lg:left-16 max-w-xl space-y-4 z-10">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-netflixRed text-white text-[10px] font-extrabold px-2 py-0.5 rounded tracking-widest uppercase">N SERIES</span>
+                        <span class="text-xs text-gray-300 font-semibold tracking-wider">TOP 1 IN TV SHOWS TODAY</span>
+                    </div>
+                    <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white drop-shadow-lg">STRANGER THINGS</h1>
+                    <p class="text-sm sm:text-base text-gray-200 line-clamp-3 font-normal drop-shadow">When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.</p>
+                    <div class="flex items-center space-x-3 pt-2">
+                        <button onclick="openPlayerModal('Stranger Things', 'https://www.w3schools.com/html/mov_bbb.mp4')" class="bg-white text-black px-6 sm:px-8 py-2.5 sm:py-3 rounded font-bold flex items-center space-x-2 hover:bg-white/80 transition text-sm sm:text-base">
+                            <i class="fas fa-play text-lg"></i>
+                            <span>Play</span>
+                        </button>
+                        <button onclick="openDetailModal('Stranger Things', 'When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.', 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=1920&auto=format&fit=crop', 'Sci-Fi, Horror', '2022', '16+')" class="bg-gray-500/60 text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded font-semibold flex items-center space-x-2 hover:bg-gray-500/40 transition text-sm sm:text-base backdrop-blur-md">
+                            <i class="fas fa-info-circle text-lg"></i>
+                            <span>More Info</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Slide 2: Cyberpunk Adventures -->
+            <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out" data-index="1">
+                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1920&auto=format&fit=crop" class="w-full h-full object-cover object-center opacity-60" alt="Cyberpunk Hero">
+                <div class="absolute inset-0 bg-gradient-to-r from-netflixDark via-netflixDark/60 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-netflixDark via-transparent to-transparent"></div>
+                <div class="absolute bottom-20 left-4 sm:left-8 lg:left-16 max-w-xl space-y-4 z-10">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-netflixRed text-white text-[10px] font-extrabold px-2 py-0.5 rounded tracking-widest uppercase">N FILM</span>
+                        <span class="text-xs text-gray-300 font-semibold tracking-wider">NEW RELEASE</span>
+                    </div>
+                    <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white drop-shadow-lg">CYBER CITY 2077</h1>
+                    <p class="text-sm sm:text-base text-gray-200 line-clamp-3 font-normal drop-shadow">In a neon-drenched metropolis ruled by corrupt corporations, a rogue mercenary navigates high-stakes cybernetic warfare and lethal conspiracies.</p>
+                    <div class="flex items-center space-x-3 pt-2">
+                        <button onclick="openPlayerModal('Cyber City 2077', 'https://www.w3schools.com/html/mov_bbb.mp4')" class="bg-white text-black px-6 sm:px-8 py-2.5 sm:py-3 rounded font-bold flex items-center space-x-2 hover:bg-white/80 transition text-sm sm:text-base">
+                            <i class="fas fa-play text-lg"></i>
+                            <span>Play</span>
+                        </button>
+                        <button onclick="openDetailModal('Cyber City 2077', 'In a neon-drenched metropolis ruled by corrupt corporations, a rogue mercenary navigates high-stakes cybernetic warfare and lethal conspiracies.', 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1920&auto=format&fit=crop', 'Action, Cyberpunk', '2023', '18+')" class="bg-gray-500/60 text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded font-semibold flex items-center space-x-2 hover:bg-gray-500/40 transition text-sm sm:text-base backdrop-blur-md">
+                            <i class="fas fa-info-circle text-lg"></i>
+                            <span>More Info</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Slide 3: Deep Space Exploration -->
+            <div class="hero-slide absolute inset-0 transition-opacity duration-1000 ease-in-out" data-index="2">
+                <img src="https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1920&auto=format&fit=crop" class="w-full h-full object-cover object-center opacity-60" alt="Space Hero">
+                <div class="absolute inset-0 bg-gradient-to-r from-netflixDark via-netflixDark/60 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-netflixDark via-transparent to-transparent"></div>
+                <div class="absolute bottom-20 left-4 sm:left-8 lg:left-16 max-w-xl space-y-4 z-10">
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-netflixRed text-white text-[10px] font-extrabold px-2 py-0.5 rounded tracking-widest uppercase">N ORIGINAL</span>
+                        <span class="text-xs text-gray-300 font-semibold tracking-wider">CRITICALLY ACCLAIMED</span>
+                    </div>
+                    <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-white drop-shadow-lg">INTERSTELLAR BEYOND</h1>
+                    <p class="text-sm sm:text-base text-gray-200 line-clamp-3 font-normal drop-shadow">A team of intrepid explorers travels through a newly discovered wormhole, venturing far beyond human limits to find a new home for mankind.</p>
+                    <div class="flex items-center space-x-3 pt-2">
+                        <button onclick="openPlayerModal('Interstellar Beyond', 'https://www.w3schools.com/html/mov_bbb.mp4')" class="bg-white text-black px-6 sm:px-8 py-2.5 sm:py-3 rounded font-bold flex items-center space-x-2 hover:bg-white/80 transition text-sm sm:text-base">
+                            <i class="fas fa-play text-lg"></i>
+                            <span>Play</span>
+                        </button>
+                        <button onclick="openDetailModal('Interstellar Beyond', 'A team of intrepid explorers travels through a newly discovered wormhole, venturing far beyond human limits to find a new home for mankind.', 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1920&auto=format&fit=crop', 'Sci-Fi, Adventure', '2024', '13+')" class="bg-gray-500/60 text-white px-5 sm:px-7 py-2.5 sm:py-3 rounded font-semibold flex items-center space-x-2 hover:bg-gray-500/40 transition text-sm sm:text-base backdrop-blur-md">
+                            <i class="fas fa-info-circle text-lg"></i>
+                            <span>More Info</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide Nav Controls & Indicators -->
+            <div class="absolute bottom-6 right-4 sm:right-12 z-20 flex items-center space-x-3">
+                <button id="hero-prev-btn" class="w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-white/20 transition focus:outline-none border border-white/20">
+                    <i class="fas fa-chevron-left text-xs"></i>
+                </button>
+                <div class="flex space-x-2" id="hero-indicators">
+                    <button class="w-8 h-1.5 rounded-full bg-netflixRed transition-all duration-300" data-slide="0"></button>
+                    <button class="w-8 h-1.5 rounded-full bg-white/40 transition-all duration-300" data-slide="1"></button>
+                    <button class="w-8 h-1.5 rounded-full bg-white/40 transition-all duration-300" data-slide="2"></button>
+                </div>
+                <button id="hero-next-btn" class="w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center hover:bg-white/20 transition focus:outline-none border border-white/20">
+                    <i class="fas fa-chevron-right text-xs"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- MOVIE ROWS CATALOG SECTION -->
+        <div class="px-4 sm:px-8 lg:px-16 -mt-12 sm:-mt-20 relative z-20 space-y-10">
+
+            <!-- ROW 1: Trending Now -->
+            <section class="space-y-3 group/row">
+                <h2 class="text-lg sm:text-xl lg:text-2xl font-bold text-white tracking-wide">Trending Now</h2>
+                <div class="relative">
+                    <button class="scroll-left-btn absolute left-0 top-0 bottom-0 z-30 w-12 bg-black/60 text-white opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 flex items-center justify-center hover:bg-black/80 rounded-r">
+                        <i class="fas fa-chevron-left text-xl"></i>
+                    </button>
+                    
+                    <div class="row-container flex space-x-3 sm:space-x-4 overflow-x-auto no-scrollbar py-3 px-1 scroll-smooth">
+                        <!-- Movie Card 1 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('The Dark Horizon', 'An apocalyptic saga where humanity must seek refuge below sea level as cosmic rays hit the surface.', 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop', 'Sci-Fi, Thriller', '2023', '16+')">
+                            <img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">The Dark Horizon</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">98% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">HD</span>
+                                    <span>2023</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Movie Card 2 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('Speed Syndicate', 'Underground racers execute high-stakes heists across European capitals.', 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop', 'Action, Crime', '2022', '18+')">
+                            <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">Speed Syndicate</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">95% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">4K</span>
+                                    <span>2022</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Movie Card 3 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('Silent Realm', 'A terrifying horror story set in an abandoned gothic mansion where sound summons shadows.', 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop', 'Horror, Mystery', '2024', '18+')">
+                            <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">Silent Realm</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">91% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">HD</span>
+                                    <span>2024</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Movie Card 4 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('The Alchemist Guild', 'Fantasy adventure following young mages unlocking ancient power scrolls.', 'https://images.unsplash.com/photo-1514539079130-25950c84af65?q=80&w=800&auto=format&fit=crop', 'Fantasy, Adventure', '2021', '13+')">
+                            <img src="https://images.unsplash.com/photo-1514539079130-25950c84af65?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">The Alchemist Guild</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">89% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">HD</span>
+                                    <span>2021</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Movie Card 5 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('Urban Legends', 'Docuseries delving into unresolved mysteries of major world metropolises.', 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?q=80&w=800&auto=format&fit=crop', 'Documentary, Mystery', '2023', '16+')">
+                            <img src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">Urban Legends</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">97% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">4K</span>
+                                    <span>2023</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="scroll-right-btn absolute right-0 top-0 bottom-0 z-30 w-12 bg-black/60 text-white opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 flex items-center justify-center hover:bg-black/80 rounded-l">
+                        <i class="fas fa-chevron-right text-xl"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ROW 2: Popular on Netflix -->
+            <section class="space-y-3 group/row">
+                <h2 class="text-lg sm:text-xl lg:text-2xl font-bold text-white tracking-wide">Popular on Netflix</h2>
+                <div class="relative">
+                    <button class="scroll-left-btn absolute left-0 top-0 bottom-0 z-30 w-12 bg-black/60 text-white opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 flex items-center justify-center hover:bg-black/80 rounded-r">
+                        <i class="fas fa-chevron-left text-xl"></i>
+                    </button>
+                    
+                    <div class="row-container flex space-x-3 sm:space-x-4 overflow-x-auto no-scrollbar py-3 px-1 scroll-smooth">
+                        <!-- Movie Card 1 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('Neon Tokyo', 'An anime cyberpunk spectacle following rebel hackers defending the last free network.', 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop', 'Anime, Sci-Fi', '2023', '16+')">
+                            <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">Neon Tokyo</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">99% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">4K</span>
+                                    <span>2023</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Movie Card 2 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('Crown of Thorns', 'Historical epic depicting medieval battles and royal intrigue across feudal territories.', 'https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=800&auto=format&fit=crop', 'Drama, History', '2022', '18+')">
+                            <img src="https://images.unsplash.com/photo-1461360370896-922624d12aa1?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">Crown of Thorns</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">94% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">HD</span>
+                                    <span>2022</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Movie Card 3 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('Cosmic Odyssey', 'Documentary exploring outer galaxy mysteries guided by top astrophysicists.', 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop', 'Documentary, Science', '2024', 'ALL')">
+                            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">Cosmic Odyssey</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">96% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">4K</span>
+                                    <span>2024</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Movie Card 4 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('Chef\'s Table: Asia', 'Savor culinary art from world-renowned chefs reinventing traditional dining.', 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=800&auto=format&fit=crop', 'Lifestyle, Culture', '2023', '10+')">
+                            <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">Chef's Table: Asia</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">92% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">HD</span>
+                                    <span>2023</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="scroll-right-btn absolute right-0 top-0 bottom-0 z-30 w-12 bg-black/60 text-white opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 flex items-center justify-center hover:bg-black/80 rounded-l">
+                        <i class="fas fa-chevron-right text-xl"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- ROW 3: Action & Thrillers -->
+            <section class="space-y-3 group/row">
+                <h2 class="text-lg sm:text-xl lg:text-2xl font-bold text-white tracking-wide">Action & Thrillers</h2>
+                <div class="relative">
+                    <button class="scroll-left-btn absolute left-0 top-0 bottom-0 z-30 w-12 bg-black/60 text-white opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 flex items-center justify-center hover:bg-black/80 rounded-r">
+                        <i class="fas fa-chevron-left text-xl"></i>
+                    </button>
+                    
+                    <div class="row-container flex space-x-3 sm:space-x-4 overflow-x-auto no-scrollbar py-3 px-1 scroll-smooth">
+                        <!-- Card 1 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('Extraction Point', 'A dangerous undercover rescue mission deep inside enemy territory.', 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=800&auto=format&fit=crop', 'Action, Thriller', '2023', '18+')">
+                            <img src="https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">Extraction Point</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">97% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">4K</span>
+                                    <span>2023</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div class="movie-card flex-none w-44 sm:w-56 lg:w-64 rounded-md overflow-hidden bg-netflixCard group cursor-pointer transform hover:scale-105 transition-transform duration-300 shadow-lg relative"
+                             onclick="openDetailModal('Shadow Agent', 'A burned spy race against time to expose a global shadow organization.', 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop', 'Spy, Action', '2024', '16+')">
+                            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop" class="w-full h-32 sm:h-40 object-cover" alt="Card Poster">
+                            <div class="p-3">
+                                <h3 class="font-bold text-sm sm:text-base text-white truncate">Shadow Agent</h3>
+                                <div class="flex items-center space-x-2 text-xs text-gray-400 mt-1">
+                                    <span class="text-green-400 font-semibold">90% Match</span>
+                                    <span class="border border-gray-600 px-1 text-[10px]">HD</span>
+                                    <span>2024</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="scroll-right-btn absolute right-0 top-0 bottom-0 z-30 w-12 bg-black/60 text-white opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 flex items-center justify-center hover:bg-black/80 rounded-l">
+                        <i class="fas fa-chevron-right text-xl"></i>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- MOVIE DETAIL MODAL -->
+    <div id="detail-modal" class="fixed inset-0 z-50 hidden bg-black/80 flex items-center justify-center p-4 sm:p-6 backdrop-blur-sm">
+        <div class="bg-netflixGray w-full max-w-3xl rounded-lg overflow-hidden shadow-2xl relative border border-gray-800">
+            <!-- Close Button -->
+            <button onclick="closeDetailModal()" class="absolute top-4 right-4 z-20 bg-black/70 text-white w-9 h-9 rounded-full flex items-center justify-center hover:bg-black transition">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+
+            <!-- Modal Backdrop Banner -->
+            <div class="relative h-64 sm:h-80 w-full">
+                <img id="modal-img" src="" class="w-full h-full object-cover" alt="Movie Banner">
+                <div class="absolute inset-0 bg-gradient-to-t from-netflixGray via-transparent to-transparent"></div>
+                <div class="absolute bottom-6 left-6 right-6">
+                    <h2 id="modal-title" class="text-3xl sm:text-4xl font-extrabold text-white drop-shadow">Title</h2>
+                    <div class="flex items-center space-x-3 mt-3">
+                        <button id="modal-play-btn" class="bg-white text-black px-6 py-2 rounded font-bold flex items-center space-x-2 hover:bg-white/80 transition text-sm">
+                            <i class="fas fa-play"></i>
+                            <span>Play</span>
+                        </button>
+                        <button class="w-10 h-10 rounded-full border border-gray-400 flex items-center justify-center text-white hover:border-white transition">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="w-10 h-10 rounded-full border border-gray-400 flex items-center justify-center text-white hover:border-white transition">
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Content Info -->
+            <div class="p-6 space-y-4">
+                <div class="flex items-center space-x-4 text-sm text-gray-300">
+                    <span id="modal-year" class="font-semibold text-green-400">2023</span>
+                    <span id="modal-rating" class="border border-gray-600 px-1.5 py-0.5 text-xs rounded">16+</span>
+                    <span id="modal-genre" class="text-gray-400">Sci-Fi, Action</span>
+                </div>
+                <p id="modal-desc" class="text-sm sm:text-base text-gray-300 leading-relaxed">Movie description text here...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIDEO PLAYER MODAL -->
+    <div id="player-modal" class="fixed inset-0 z-50 hidden bg-black flex flex-col items-center justify-center">
+        <div class="absolute top-4 left-4 z-20 flex items-center space-x-4">
+            <button onclick="closePlayerModal()" class="text-white hover:text-netflixRed transition text-2xl p-2 focus:outline-none">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <span id="player-title" class="text-white font-bold text-lg">Playing Movie</span>
+        </div>
+        <div class="w-full h-full flex items-center justify-center">
+            <video id="video-element" class="w-full max-h-full" controls autoplay>
+                <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="px-4 sm:px-8 lg:px-16 py-10 bg-netflixDark border-t border-gray-800 text-gray-500 text-xs sm:text-sm space-y-6">
+        <div class="flex space-x-6 text-xl text-gray-400">
+            <a href="#" class="hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="hover:text-white transition"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="hover:text-white transition"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="hover:text-white transition"><i class="fab fa-youtube"></i></a>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <a href="#" class="hover:underline">Audio Description</a>
+            <a href="#" class="hover:underline">Help Center</a>
+            <a href="#" class="hover:underline">Gift Cards</a>
+            <a href="#" class="hover:underline">Media Center</a>
+            <a href="#" class="hover:underline">Investor Relations</a>
+            <a href="#" class="hover:underline">Jobs</a>
+            <a href="#" class="hover:underline">Terms of Use</a>
+            <a href="#" class="hover:underline">Privacy</a>
+            <a href="#" class="hover:underline">Legal Notices</a>
+            <a href="#" class="hover:underline">Cookie Preferences</a>
+            <a href="#" class="hover:underline">Corporate Information</a>
+            <a href="#" class="hover:underline">Contact Us</a>
+        </div>
+        <p class="text-[11px] text-gray-600">© 1997-2026 Netflix, Inc. Parell Streaming Experience.</p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // DOM Elements
+        const mainHeader = document.getElementById('main-header');
+        const profileDropdownContainer = document.getElementById('profile-dropdown-container');
+        const profileMenuBtn = document.getElementById('profile-menu-btn');
+        const profileDropdownMenu = document.getElementById('profile-dropdown-menu');
+        const profileArrow = document.getElementById('profile-arrow');
+        const searchToggleBtn = document.getElementById('search-toggle-btn');
+        const searchInput = document.getElementById('search-input');
+
+        // FIXED PROFILE DROPDOWN LOGIC
+        // Toggles open/close on click of the profile button
+        profileMenuBtn.addEventListener('click', function(e) {
+            e.stopPropagation(); // Stop click from propagating to document
+            const isExpanded = profileMenuBtn.getAttribute('aria-expanded') === 'true';
+            
+            if (isExpanded) {
+                closeProfileDropdown();
+            } else {
+                openProfileDropdown();
+            }
+        });
+
+        function openProfileDropdown() {
+            profileDropdownMenu.classList.remove('hidden');
+            profileMenuBtn.setAttribute('aria-expanded', 'true');
+            profileArrow.classList.add('rotate-180');
+        }
+
+        function closeProfileDropdown() {
+            profileDropdownMenu.classList.add('hidden');
+            profileMenuBtn.setAttribute('aria-expanded', 'false');
+            profileArrow.classList.remove('rotate-180');
+        }
+
+        // Close dropdown when clicking anywhere outside of the profile container
+        document.addEventListener('click', function(e) {
+            if (!profileDropdownContainer.contains(e.target)) {
+                closeProfileDropdown();
+            }
+        });
+
+        // Header Background Scroll Effect
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                mainHeader.classList.add('bg-netflixDark');
+                mainHeader.classList.remove('bg-gradient-to-b');
+            } else {
+                mainHeader.classList.remove('bg-netflixDark');
+                mainHeader.classList.add('bg-gradient-to-b');
+            }
+        });
+
+        // Search Bar Expand Effect
+        searchToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (searchInput.classList.contains('w-0')) {
+                searchInput.classList.remove('w-0', 'opacity-0');
+                searchInput.classList.add('w-48', 'sm:w-60', 'opacity-100');
+                searchInput.focus();
+            } else {
+                searchInput.classList.add('w-0', 'opacity-0');
+                searchInput.classList.remove('w-48', 'sm:w-60', 'opacity-100');
+            }
+        });
+
+        // HERO BANNER SLIDESHOW LOGIC (Auto 5s + swipe/indicators)
+        const slides = document.querySelectorAll('.hero-slide');
+        const indicatorBtns = document.querySelectorAll('#hero-indicators button');
+        const heroPrevBtn = document.getElementById('hero-prev-btn');
+        const heroNextBtn = document.getElementById('hero-next-btn');
+        let currentSlide = 0;
+        let slideInterval;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                if (i === index) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            indicatorBtns.forEach((btn, i) => {
+                if (i === index) {
+                    btn.classList.add('bg-netflixRed');
+                    btn.classList.remove('bg-white/40');
+                } else {
+                    btn.classList.remove('bg-netflixRed');
+                    btn.classList.add('bg-white/40');
+                }
+            });
+            currentSlide = index;
+        }
+
+        function nextSlide() {
+            let nextIndex = (currentSlide + 1) % slides.length;
+            showSlide(nextIndex);
+        }
+
+        function prevSlide() {
+            let prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+            showSlide(prevIndex);
+        }
+
+        function startAutoSlide() {
+            slideInterval = setInterval(nextSlide, 5000);
+        }
+
+        function resetAutoSlide() {
+            clearInterval(slideInterval);
+            startAutoSlide();
+        }
+
+        heroNextBtn.addEventListener('click', () => {
+            nextSlide();
+            resetAutoSlide();
+        });
+
+        heroPrevBtn.addEventListener('click', () => {
+            prevSlide();
+            resetAutoSlide();
+        });
+
+        indicatorBtns.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                showSlide(index);
+                resetAutoSlide();
+            });
+        });
+
+        // Touch Swipe & Drag for Hero Banner
+        const heroSection = document.getElementById('hero-banner-section');
+        let startX = 0;
+        let endX = 0;
+
+        heroSection.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+
+        heroSection.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            if (startX - endX > 50) {
+                nextSlide();
+                resetAutoSlide();
+            } else if (endX - startX > 50) {
+                prevSlide();
+                resetAutoSlide();
+            }
+        }
+
+        // ROW SCROLLING BUTTONS LOGIC
+        document.querySelectorAll('.group\\/row').forEach(rowSection => {
+            const container = rowSection.querySelector('.row-container');
+            const leftBtn = rowSection.querySelector('.scroll-left-btn');
+            const rightBtn = rowSection.querySelector('.scroll-right-btn');
+
+            if (leftBtn && rightBtn && container) {
+                leftBtn.addEventListener('click', () => {
+                    container.scrollBy({ left: -400, behavior: 'smooth' });
+                });
+                rightBtn.addEventListener('click', () => {
+                    container.scrollBy({ left: 400, behavior: 'smooth' });
+                });
+            }
+        });
+
+        // MODAL DETAILED VIEW LOGIC
+        const detailModal = document.getElementById('detail-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalDesc = document.getElementById('modal-desc');
+        const modalImg = document.getElementById('modal-img');
+        const modalGenre = document.getElementById('modal-genre');
+        const modalYear = document.getElementById('modal-year');
+        const modalRating = document.getElementById('modal-rating');
+        const modalPlayBtn = document.getElementById('modal-play-btn');
+
+        function openDetailModal(title, desc, img, genre, year, rating) {
+            modalTitle.textContent = title;
+            modalDesc.textContent = desc;
+            modalImg.src = img;
+            modalGenre.textContent = genre;
+            modalYear.textContent = year;
+            modalRating.textContent = rating;
+
+            modalPlayBtn.onclick = () => {
+                closeDetailModal();
+                openPlayerModal(title, 'https://www.w3schools.com/html/mov_bbb.mp4');
+            };
+
+            detailModal.classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            detailModal.classList.add('hidden');
+        }
+
+        // VIDEO PLAYER MODAL LOGIC
+        const playerModal = document.getElementById('player-modal');
+        const playerTitle = document.getElementById('player-title');
+        const videoElement = document.getElementById('video-element');
+
+        function openPlayerModal(title, videoSrc) {
+            playerTitle.textContent = title;
+            videoElement.src = videoSrc;
+            playerModal.classList.remove('hidden');
+            videoElement.play();
+        }
+
+        function closePlayerModal() {
+            videoElement.pause();
+            playerModal.classList.add('hidden');
+        }
+
+        // Initialize Auto Slide on Load
+        window.onload = function() {
+            startAutoSlide();
+        };
+    </script>
+</body>
+</html>
